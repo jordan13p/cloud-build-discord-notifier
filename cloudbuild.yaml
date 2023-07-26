@@ -1,0 +1,25 @@
+steps:
+  # Build images
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/$PROJECT_NAME/cloud-build-discord-notifier:${TAG_NAME}', '.' ]
+
+  # Push images
+  - name: gcr.io/cloud-builders/docker
+    args: [ "push", "us-docker.pkg.dev/$PROJECT_ID/$PROJECT_NAME/cloud-build-discord-notifier:${TAG_NAME}" ]
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:alpine'
+    entrypoint: gcloud
+    args:
+    - 'run'
+    - 'deploy'
+    - 'cloud-build-discord-notifier'
+    - '--image'
+    - 'us-docker.pkg.dev/$PROJECT_ID/$PROJECT_NAME/cloud-build-discord-notifier:${TAG_NAME}'
+    - '--region'
+    - 'asia-southeast1'
+
+options:
+  logging: GCS_ONLY
+  # pool: # use private pool to connect private IP services
+  #   name: ''
